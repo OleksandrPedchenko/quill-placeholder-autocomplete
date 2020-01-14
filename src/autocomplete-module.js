@@ -18,12 +18,13 @@ export default (Quill) => {
      * @param {Object} options module options
      * @memberof AutoComplete
      */
-    constructor(quill, { onClose, onOpen, getPlaceholders, container, triggerKey = '#' }) {
+    constructor(quill, { onClose, onOpen, getPlaceholders, container, triggerKey = '#', endKey }) {
       this.quill = quill;
       this.onClose = onClose;
       this.onOpen = onOpen;
       this.getPlaceholders = getPlaceholders;
       this.triggerKey = triggerKey;
+      this.endKey = endKey;
       if (typeof container === 'string') {
         this.container = this.quill.container.parentNode.querySelector(container);
       } else if (container === undefined) {
@@ -32,7 +33,7 @@ export default (Quill) => {
       } else {
         this.container = container;
       }
-      this.container.classList.add('ql-autocomplete-menu1', 'completions');
+      this.container.classList.add('ql-autocomplete-menu', 'completions');
       this.container.style.position = 'absolute';
       this.container.style.display = 'none';
 
@@ -116,8 +117,9 @@ export default (Quill) => {
       // binding event handler to handle user want to quit autocompletions
       this.quill.once('selection-change', this.onSelectionChange);
       this.quill.root.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter')
+        if (event.key === 'Enter' || this.endKey && event.key === this.endKey ){
           this.handleEnterTab();
+        }
       }, { once: true });
       this.update();
       this.onOpen && this.onOpen();
@@ -185,7 +187,7 @@ export default (Quill) => {
         .sort((ph1, ph2) => ph1.label > ph2.label);
       this.renderCompletions(this.placeholders);
       this.quill.root.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter')
+        if (event.key === 'Enter' || this.endKey && event.key === this.endKey )
           this.handleEnterTab();
       }, { once: true });
     }
@@ -219,7 +221,7 @@ export default (Quill) => {
         } else if (event.key === 'ArrowUp' || event.keyCode === 38) {
           event.preventDefault();
           buttons[Math.max(0, i - 1)].focus();
-        } else if (event.key === 'Enter' || event.keyCode === 13
+        } else if (event.key === this.endKey || event.key === 'Enter' || event.keyCode === 13
           || event.key === ' ' || event.keyCode === 32
           || event.key === 'Tab' || event.keyCode === 9) {
           event.preventDefault();
