@@ -118,6 +118,7 @@ export default (Quill) => {
       this.quill.once('selection-change', this.onSelectionChange);
       this.quill.root.addEventListener('keydown', (event) => {
         if (event.key === 'Enter' || this.endKey && event.key === this.endKey ){
+          event.preventDefault();
           this.handleEnterTab();
         }
       }, { once: true });
