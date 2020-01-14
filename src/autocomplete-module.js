@@ -18,11 +18,12 @@ export default (Quill) => {
      * @param {Object} options module options
      * @memberof AutoComplete
      */
-    constructor(quill, { onClose, onOpen, getPlaceholders, container }) {
+    constructor(quill, { onClose, onOpen, getPlaceholders, container, triggerKey = '#' }) {
       this.quill = quill;
       this.onClose = onClose;
       this.onOpen = onOpen;
       this.getPlaceholders = getPlaceholders;
+      this.triggerKey = triggerKey;
       if (typeof container === 'string') {
         this.container = this.quill.container.parentNode.querySelector(container);
       } else if (container === undefined) {
@@ -31,7 +32,7 @@ export default (Quill) => {
       } else {
         this.container = container;
       }
-      this.container.classList.add('ql-autocomplete-menu', 'completions');
+      this.container.classList.add('ql-autocomplete-menu1', 'completions');
       this.container.style.position = 'absolute';
       this.container.style.display = 'none';
 
@@ -57,7 +58,7 @@ export default (Quill) => {
         if (event.defaultPrevented)
           return; // Do nothing if the event was already processed
 
-        if (event.key === '#') {
+        if (event.key === this.triggerKey) {
           if (!this.toolbarHeight)
             this.toolbarHeight = this.quill.getModule('toolbar').container.offsetHeight;
           this.onHashKey(this.quill.getSelection());
@@ -84,7 +85,7 @@ export default (Quill) => {
     }
 
     /**
-     * Called when user entered `#`
+     * Called when user entered trigger key
      * prepare editor and open completions list
      * @param {Quill.RangeStatic} range concerned region
      * @param {any} context editor context
@@ -101,7 +102,7 @@ export default (Quill) => {
         this.quill.deleteText(range.index, range.length, Quill.sources.USER);
       }
       // insert a temporary SuggestBlot
-      this.quill.insertText(range.index, '#', 'suggest', '@@placeholder', Quill.sources.USER);
+      this.quill.insertText(range.index, this.triggerKey, 'suggest', '@@placeholder', Quill.sources.USER);
       const hashSignBounds = this.quill.getBounds(range.index);
       this.quill.setSelection(range.index + 1, Quill.sources.SILENT);
 
@@ -183,6 +184,10 @@ export default (Quill) => {
         .filter(ph => ph.label.toLowerCase().startsWith(this.query))
         .sort((ph1, ph2) => ph1.label > ph2.label);
       this.renderCompletions(this.placeholders);
+      this.quill.root.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter')
+          this.handleEnterTab();
+      }, { once: true });
     }
 
     /**
@@ -228,7 +233,7 @@ export default (Quill) => {
       placeholders.forEach((placeholder, i) => {
         const li = h('li', {},
           h('button', { type: 'button' },
-            h('span', { className: 'matched' }, '#' + placeholder.label.slice(0, this.query.length)),
+            h('span', { className: 'matched' }, '{' + placeholder.label.slice(0, this.query.length)),
             h('span', { className: 'unmatched' }, placeholder.label.slice(this.query.length))));
         this.container.appendChild(li);
         buttons[i] = li.firstChild;

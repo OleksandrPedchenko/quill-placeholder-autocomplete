@@ -1,6 +1,6 @@
 {
-  "name": "quill-placeholder-autocomplete-module",
-  "version": "1.0.4-1",
+  "name": "quill-placeholder-autocomplete-module-fork",
+  "version": "1.0.4-2",
   "description": "brings autocomplete to Quill placeholder module",
   "main": "dist/quill-placeholder-autocomplete-module.min.js",
   "scripts": {
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Datananas/quill-placeholder-autocomplete.git"
+    "url": "git+https://github.com/OleksandrPedchenko/quill-placeholder-autocomplete.git"
   },
   "keywords": [
     "quill",
@@ -20,9 +20,9 @@
   "author": "David Mamane <david@datananas.com>",
   "license": "SEE LICENSE IN LICENSE",
   "bugs": {
-    "url": "https://github.com/Datananas/quill-placeholder-autocomplete/issues"
+    "url": "https://github.com/OleksandrPedchenko/quill-placeholder-autocomplete/issues"
   },
-  "homepage": "https://github.com/Datananas/quill-placeholder-autocomplete#readme",
+  "homepage": "https://github.com/OleksandrPedchenko/quill-placeholder-autocomplete#readme",
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
@@ -34,5 +34,7 @@
     "uglifyjs-webpack-plugin": "^1.1.8",
     "webpack": "^3.10.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "quill-placeholder-autocomplete-module-fork": "^1.0.4-2"
+  }
 }
