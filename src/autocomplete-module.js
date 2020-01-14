@@ -113,15 +113,16 @@ export default (Quill) => {
       this.open = true;
       this.quill.suggestsDialogOpen = true;
       // binding completions event handler to handle user query
+      this.quill.root.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || this.endKey && event.key === this.endKey ){
+          this.handleEnterTab();
+          event.preventDefault();
+        }
+      });
       this.quill.on('text-change', this.onTextChange);
       // binding event handler to handle user want to quit autocompletions
       this.quill.once('selection-change', this.onSelectionChange);
-      this.quill.root.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || this.endKey && event.key === this.endKey ){
-          event.preventDefault();
-          this.handleEnterTab();
-        }
-      }, { once: true });
+
       this.update();
       this.onOpen && this.onOpen();
     }
@@ -184,13 +185,16 @@ export default (Quill) => {
       this.query = this.originalQuery.toLowerCase();
       // TODO: Should use fuse.js or similar fuzzy-matcher
       this.placeholders = this.getPlaceholders()
-        .filter(ph => ph.label.toLowerCase().startsWith(this.query))
+        .filter(ph => ph.label.toLowerCase().includes(this.query))
         .sort((ph1, ph2) => ph1.label > ph2.label);
       this.renderCompletions(this.placeholders);
       this.quill.root.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || this.endKey && event.key === this.endKey )
+        if (event.key === 'Enter' || this.endKey && event.key === this.endKey ){
           this.handleEnterTab();
-      }, { once: true });
+          if (!event.shiftKey)
+            event.preventDefault();
+        }
+      });
     }
 
     /**
@@ -234,10 +238,13 @@ export default (Quill) => {
       };
       // prepare buttons corresponding to each placeholder
       placeholders.forEach((placeholder, i) => {
+        const queryStart = placeholder.label.indexOf(this.query);
+        const queryEnd = queryStart + this.query.length;
         const li = h('li', {},
           h('button', { type: 'button' },
-            h('span', { className: 'matched' }, '{' + placeholder.label.slice(0, this.query.length)),
-            h('span', { className: 'unmatched' }, placeholder.label.slice(this.query.length))));
+            h('span', { className: 'unmatched' }, placeholder.label.slice(0, queryStart)),
+            h('span', { className: 'matched' }, placeholder.label.substring(queryStart, queryEnd)),
+            h('span', { className: 'unmatched' }, placeholder.label.slice(queryEnd))));
         this.container.appendChild(li);
         buttons[i] = li.firstChild;
         // event handlers will be garbage-collected with button on each re-render
