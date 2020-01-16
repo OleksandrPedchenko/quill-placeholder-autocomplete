@@ -47,7 +47,8 @@ export default (Quill) => {
       this.buttons = [];
       this.placeholders = [];
       this.toolbarHeight = 0;
-
+      this.keyboard = this.quill.getModule('keyboard');
+      this.enterHandler =  this.keyboard.bindings[13]
       // TODO: Once Quill supports using event.key (issue #1091) use that instead of alt-3
       // quill.keyboard.addBinding({
       //   key: 51,  // '3' keyCode
@@ -113,15 +114,16 @@ export default (Quill) => {
       this.open = true;
       this.quill.suggestsDialogOpen = true;
       // binding completions event handler to handle user query
+        this.keyboard.bindings[13] = []
       this.quill.root.addEventListener('keydown', (event) => {
         if (event.key === 'Enter' || this.endKey && event.key === this.endKey ){
-          this.handleEnterTab();
-          event.preventDefault();
+            event.preventDefault();
+            this.handleEnterTab();
         }
       });
       this.quill.on('text-change', this.onTextChange);
       // binding event handler to handle user want to quit autocompletions
-      this.quill.once('selection-change', this.onSelectionChange);
+      this.quill.on('selection-change', this.onSelectionChange);
 
       this.update();
       this.onOpen && this.onOpen();
@@ -188,13 +190,6 @@ export default (Quill) => {
         .filter(ph => ph.label.toLowerCase().includes(this.query))
         .sort((ph1, ph2) => ph1.label > ph2.label);
       this.renderCompletions(this.placeholders);
-      this.quill.root.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || this.endKey && event.key === this.endKey ){
-          this.handleEnterTab();
-          if (!event.shiftKey)
-            event.preventDefault();
-        }
-      });
     }
 
     /**
@@ -214,8 +209,7 @@ export default (Quill) => {
      * @memberof AutoComplete
      */
     renderCompletions(placeholders) {
-      this.emptyCompletionsContainer();
-
+      console.log("renderCompletions")
       const buttons = Array(placeholders.length);
       this.buttons = buttons;
       /* eslint complexity: ["error", 13] */
@@ -229,28 +223,29 @@ export default (Quill) => {
         } else if (event.key === this.endKey || event.key === 'Enter' || event.keyCode === 13
           || event.key === ' ' || event.keyCode === 32
           || event.key === 'Tab' || event.keyCode === 9) {
-          event.preventDefault();
+            event.preventDefault();
           this.close(placeholder);
         } else if (event.key === 'Escape' || event.keyCode === 27) {
           event.preventDefault();
           this.close();
         }
       };
-      // prepare buttons corresponding to each placeholder
+        this.emptyCompletionsContainer();
+        // prepare buttons corresponding to each placeholder
       placeholders.forEach((placeholder, i) => {
         const queryStart = placeholder.label.indexOf(this.query);
         const queryEnd = queryStart + this.query.length;
         const li = h('li', {},
           h('button', { type: 'button' },
-            h('span', { className: 'unmatched' }, placeholder.label.slice(0, queryStart)),
-            h('span', { className: 'matched' }, placeholder.label.substring(queryStart, queryEnd)),
-            h('span', { className: 'unmatched' }, placeholder.label.slice(queryEnd))));
+            h('span', { className: 'unmatched' }, placeholder.id.slice(0, queryStart)),
+            h('span', { className: 'matched' }, placeholder.id.substring(queryStart, queryEnd)),
+            h('span', { className: 'unmatched' }, placeholder.id.slice(queryEnd))));
         this.container.appendChild(li);
         buttons[i] = li.firstChild;
         // event handlers will be garbage-collected with button on each re-render
         buttons[i].addEventListener('keydown', handler(i, placeholder));
         buttons[i].addEventListener('mousedown', () => this.close(placeholder));
-        buttons[i].addEventListener('focus', () => this.focusedButton = i);
+        buttons[i].addEventListener('focus', () => {console.log(i); this.focusedButton = i});
         buttons[i].addEventListener('unfocus', () => this.focusedButton = null);
       });
       this.container.style.display = 'block';
@@ -273,13 +268,16 @@ export default (Quill) => {
       // removing user query from before
       this.quill.updateContents(delta, Quill.sources.USER);
       if (placeholder) {
+        this.quill.insertText(this.hashIndex, " ")
         this.quill.insertEmbed(this.hashIndex, 'placeholder', placeholder, Quill.sources.USER);
-        this.quill.setSelection(this.hashIndex + 1, 0, Quill.sources.SILENT);
+          this.quill.deleteText(this.hashIndex+1, 1)
+          this.quill.setSelection(this.hashIndex + 1, 0, Quill.sources.SILENT);
       }
       this.quill.focus();
       this.open = false;
       this.quill.suggestsDialogOpen = false;
       this.onClose && this.onClose(placeholder || null);
+        this.keyboard.bindings[13] = this.enterHandler
     }
 
   }
