@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"no test specified, soon...\" && exit 0",
     "build": "webpack",
+    "dev": "webpack --watch",
     "lint": "./node_modules/.bin/eslint --ext .js src",
     "lint:fix": "npm run lint -- --fix"
   },

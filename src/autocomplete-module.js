@@ -209,7 +209,6 @@ export default (Quill) => {
      * @memberof AutoComplete
      */
     renderCompletions(placeholders) {
-      console.log("renderCompletions")
       const buttons = Array(placeholders.length);
       this.buttons = buttons;
       /* eslint complexity: ["error", 13] */
@@ -244,8 +243,11 @@ export default (Quill) => {
         buttons[i] = li.firstChild;
         // event handlers will be garbage-collected with button on each re-render
         buttons[i].addEventListener('keydown', handler(i, placeholder));
-        buttons[i].addEventListener('mousedown', () => this.close(placeholder));
-        buttons[i].addEventListener('focus', () => {console.log(i); this.focusedButton = i});
+        buttons[i].addEventListener('mousedown', () => {
+          event.preventDefault();
+          this.close(placeholder);
+        });
+        buttons[i].addEventListener('focus', () => { this.focusedButton = i});
         buttons[i].addEventListener('unfocus', () => this.focusedButton = null);
       });
       this.container.style.display = 'block';
@@ -273,11 +275,12 @@ export default (Quill) => {
           this.quill.deleteText(this.hashIndex+1, 1)
           this.quill.setSelection(this.hashIndex + 1, 0, Quill.sources.SILENT);
       }
-      this.quill.focus();
       this.open = false;
       this.quill.suggestsDialogOpen = false;
       this.onClose && this.onClose(placeholder || null);
         this.keyboard.bindings[13] = this.enterHandler
+      console.log("here")
+      this.quill.focus();
     }
 
   }
